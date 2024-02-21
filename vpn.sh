@@ -60,7 +60,7 @@ download_ovpn() {
 }
 
 run_vpn() {
-    sudo openvpn --config /tmp/linux.ovpn
+    sudo openvpn --config ./linux.ovpn
 }
 
 main() {
@@ -74,7 +74,7 @@ main() {
             download_ovpn
             ;;
         2)
-            if [ ! -f "/tmp/linux.ovpn" ]; then
+            if [ ! -f "./linux.ovpn" ]; then
                 echo "VPN configuration file not found. Please download it first."
                 exit 1
             fi
