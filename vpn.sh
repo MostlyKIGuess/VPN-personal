@@ -1,5 +1,8 @@
 #!/bin/bash
 
+credentials_file="./credentials.txt"
+
+
 install_openvpn() {
     distro=$(awk -F= '/^NAME/{print $2}' /etc/os-release | tr -d '"')
     case $distro in
@@ -52,14 +55,28 @@ download_ovpn() {
             ;;
     esac
 
-    echo "Enter your username for VPN authentication:"
-    read username
-    echo "Enter your password for VPN authentication:"
-    read -s password
-    wget --user="$username" --password="$password" -O /tmp/linux.ovpn https://vpn.iiit.ac.in/secure/linux.ovpn
+    if [ -f "$credentials_file" ]; then
+        # Read the username and password from the file
+        readarray -t credentials < "$credentials_file"
+        username="${credentials[0]}"
+        password="${credentials[1]}"
+    else
+        echo "Enter your username for VPN authentication:"
+        read username
+        echo "Enter your password for VPN authentication:"
+        read -s password
+        # Save the username and password to the file
+        echo "$username" > "$credentials_file"
+        echo "$password" >> "$credentials_file"
+    fi
+
+    wget --user="$username" --password="$password" -O ./linux.ovpn https://vpn.iiit.ac.in/file/linux.ovpn
 }
 
 run_vpn() {
+    if [ -f "$credentials_file" ]; then
+        sed -i 's/auth-user-pass/auth-user-pass credentials.txt/g' ./linux.ovpn
+    fi
     sudo openvpn --config ./linux.ovpn
 }
 
